@@ -10,6 +10,7 @@ import (
 	"github.com/victorukeh/mobile-market/pkg/v1/dto/handler"
 	helper "github.com/victorukeh/mobile-market/pkg/v1/helpers"
 	"github.com/victorukeh/mobile-market/pkg/v1/models"
+	"github.com/victorukeh/mobile-market/pkg/v1/utils"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
@@ -53,6 +54,13 @@ func (uc *AuthController) Register(c *fiber.Ctx) error {
 		response := &auth.Response{Success: false, Message: "User item was not created"}
 		return c.Status(fiber.StatusCreated).JSON(response)
 	}
+	emailData := utils.VerificationEmailData{
+		Url:     "http://localhost:2000" + "/verifyemail/" + token,
+		Name:    *user.First_name,
+		Subject: "Your account verification code",
+	}
+
+	utils.SendVerificationEmail(*user.Email, &emailData)
 	response := &auth.RegisterResponse{Success: true, Message: "User Created Successfully", User: result}
 	return c.Status(fiber.StatusCreated).JSON(response)
 }
