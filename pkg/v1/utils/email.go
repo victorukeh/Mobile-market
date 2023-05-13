@@ -54,7 +54,14 @@ func SendVerificationEmail(email string, data *VerificationEmailData) error {
 	num, _ := strconv.Atoi(smtp_port)
 	fmt.Println(smtp_host, smtp_pass, smtp_port, smtp_user, num)
 	d := gomail.NewDialer(smtp_host, num, smtp_user, smtp_pass)
-	d.TLSConfig = &tls.Config{InsecureSkipVerify: false}
+	tlsconfig := &tls.Config{
+		InsecureSkipVerify: true,
+		ServerName:         smtp_host,
+	}
+	d.TLSConfig = tlsconfig
+	// d.TLSConfig = &tls.Config{InsecureSkipVerify: true}
+	// d. := &http.Transport{TLSClientConfig: tlsConfig}
+	// client := &http.Client{Transport: transport}
 
 	// Send Email
 	if err := d.DialAndSend(m); err != nil {
