@@ -48,19 +48,24 @@ func (uc *AuthController) Register(c *fiber.Ctx) error {
 	user.ID = primitive.NewObjectID()
 	token, _, _ := helper.GenerateAllTokens(*user.Email, *user.First_name, *user.Last_name, user.Role, user.ID)
 	user.Confirmation_token = &token
-
-	result, err := user.Create(user)
-	if err != nil {
-		response := &auth.Response{Success: false, Message: "User item was not created"}
-		return c.Status(fiber.StatusCreated).JSON(response)
-	}
 	emailData := utils.VerificationEmailData{
 		Url:     "http://localhost:2000" + "/verifyemail/" + token,
 		Name:    *user.First_name,
 		Subject: "Your account verification code",
 	}
 
-	utils.SendVerificationEmail(*user.Email, &emailData)
+	err = utils.SendVerificationEmail(*user.Email, &emailData)
+	if err != nil {
+		response := &auth.Response{Success: false, Message: err.Error()}
+		return c.Status(fiber.StatusInternalServerError).JSON(response)
+	}
+
+	result, err := user.Create(user)
+	if err != nil {
+		response := &auth.Response{Success: false, Message: "User item was not created"}
+		return c.Status(fiber.StatusCreated).JSON(response)
+	}
+
 	response := &auth.RegisterResponse{Success: true, Message: "User Created Successfully", User: result}
 	return c.Status(fiber.StatusCreated).JSON(response)
 }

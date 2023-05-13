@@ -21,7 +21,7 @@ type VerificationEmailData struct {
 	Subject string
 }
 
-func SendVerificationEmail(email string, data *VerificationEmailData) {
+func SendVerificationEmail(email string, data *VerificationEmailData) error {
 	err := godotenv.Load(".env")
 	if err != nil {
 		log.Fatal("Error loading content from env file")
@@ -51,17 +51,17 @@ func SendVerificationEmail(email string, data *VerificationEmailData) {
 	m.SetBody("text/html", body.String())
 	m.AddAlternative("text/plain", html2text.HTML2Text(body.String()))
 
-	// auth = smtp.PlainAuth("", smtp_email, smtp_password, smtp_host)
-	// server := "smtp.gmail.com:587"
 	num, _ := strconv.Atoi(smtp_port)
 	fmt.Println(smtp_host, smtp_pass, smtp_port, smtp_user, num)
 	d := gomail.NewDialer(smtp_host, num, smtp_user, smtp_pass)
-	d.TLSConfig = &tls.Config{InsecureSkipVerify: true}
+	d.TLSConfig = &tls.Config{InsecureSkipVerify: false}
 
 	// Send Email
 	if err := d.DialAndSend(m); err != nil {
-		log.Fatal("Could not send email: ", err)
+		// log.Fatal("Could not send email: ", err)
+		return err
 	}
+	return err
 }
 
 // ? Email template parser
