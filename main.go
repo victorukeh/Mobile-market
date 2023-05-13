@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"log"
-	"net/http"
 	"os"
 
 	"github.com/gofiber/fiber/v2"
@@ -30,9 +29,9 @@ func main() {
 	routes.SetupRoutes(app)
 	log.Printf("Listening on :%s...", port)
 	// Start the server on port 3000
-	// app.Listen(":2000")
-	err := http.ListenAndServe(fmt.Sprintf(":%s", port), nil)
-	if err != nil {
-		log.Fatal(err)
-	}
+	app.Listen(fmt.Sprintf(":%s", port))
+	// err := http.ListenAndServe(fmt.Sprintf(":%s", port), nil)
+	// if err != nil {
+	// 	log.Fatal(err)
+	// }
 }
