@@ -1,12 +1,13 @@
 package controllers
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/go-playground/validator/v10"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/victorukeh/mobile-market/pkg/v1/dto/auth"
+	auth "github.com/victorukeh/mobile-market/pkg/v1/dto/auth"
 	"github.com/victorukeh/mobile-market/pkg/v1/dto/handler"
 	helper "github.com/victorukeh/mobile-market/pkg/v1/helpers"
 	"github.com/victorukeh/mobile-market/pkg/v1/models"
@@ -48,17 +49,21 @@ func (uc *AuthController) Register(c *fiber.Ctx) error {
 	user.ID = primitive.NewObjectID()
 	token, _, _ := helper.GenerateAllTokens(*user.Email, *user.First_name, *user.Last_name, user.Role, user.ID)
 	user.Confirmation_token = &token
+	user.Confirmed = false
 	emailData := utils.VerificationEmailData{
 		Url:     "http://localhost:2000" + "/verifyemail/" + token,
 		Name:    *user.First_name,
 		Subject: "Your account verification code",
 	}
 
+	// Only for production and staging
+
 	err = utils.SendVerificationEmail(*user.Email, &emailData)
 	if err != nil {
 		response := &auth.Response{Success: false, Message: err.Error()}
 		return c.Status(fiber.StatusInternalServerError).JSON(response)
 	}
+	fmt.Println("Token: ", token)
 
 	result, err := user.Create(user)
 	if err != nil {
@@ -76,29 +81,29 @@ func (uc *AuthController) Register(c *fiber.Ctx) error {
 func (uc *AuthController) Login(c *fiber.Ctx) error {
 	var user models.User
 	var foundUser models.User
-	var try auth.LoginForm
+	var loginDetails auth.LoginForm
 
-	err := c.BodyParser(&try)
+	err := c.BodyParser(&loginDetails)
 	if err != nil {
 		response := &auth.Response{Success: false, Message: err.Error()}
 		return c.Status(fiber.ErrBadRequest.Code).JSON(response)
 	}
 
 	// Validation
-	validationErr := validate.Struct(try)
+	validationErr := validate.Struct(loginDetails)
 	if validationErr != nil {
 		// return fiber.NewError(fiber.ErrBadRequest.Code, validationErr.Error())
 		response := &auth.Response{Success: false, Message: validationErr.Error()}
 		return c.Status(fiber.ErrBadRequest.Code).JSON(response)
 	}
 
-	result, err := user.FindByEmail(*try.Email, foundUser)
+	result, err := user.FindByEmail(*loginDetails.Email, foundUser)
 
 	if err != nil {
 		response := &auth.Response{Success: false, Message: "User not found"}
 		return c.Status(fiber.StatusNotFound).JSON(response)
 	}
-	passwordIsValid := user.VerifyPassword(*try.Password, *result.Password)
+	passwordIsValid := user.VerifyPassword(*loginDetails.Password, *result.Password)
 	if !passwordIsValid {
 		response := &auth.Response{Success: false, Message: "Invalid password"}
 		return c.Status(fiber.ErrBadRequest.Code).JSON(response)
@@ -110,5 +115,30 @@ func (uc *AuthController) Login(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusInternalServerError).JSON(response)
 	}
 	response := &auth.LoginResponse{Success: false, Token: token, Message: "Login Successful", User: result}
+	return c.Status(fiber.StatusOK).JSON(response)
+}
+
+// @desc	Confirm Email TO Verify Account
+// @route	/api/v1/auth/confirm/:token
+// @access	Public
+func (uc *AuthController) ConfirmEmail(c *fiber.Ctx) error {
+	var user models.User
+	token := c.Params("token")
+	credentials := helper.Decode(token)
+	result, err := user.FindById(credentials.Id)
+	if err != nil {
+		response := &auth.Response{Success: false, Message: err.Error()}
+		return c.Status(fiber.StatusInternalServerError).JSON(response)
+	}
+	value, err := user.UpdateStatus(result.ID)
+	if !value {
+		response := &auth.Response{Success: false, Message: "Your account is already verified. Please Login"}
+		return c.Status(fiber.StatusBadRequest).JSON(response)
+	}
+	if err != nil {
+		response := &auth.Response{Success: false, Message: err.Error()}
+		return c.Status(fiber.StatusInternalServerError).JSON(response)
+	}
+	response := &auth.Response{Success: false, Message: "You have been verified. Please login with your credentials"}
 	return c.Status(fiber.StatusOK).JSON(response)
 }

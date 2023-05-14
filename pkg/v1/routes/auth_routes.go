@@ -12,4 +12,5 @@ func AuthRoutes(router fiber.Router) {
 	// Define your nested routes using the nested.Get(), nested.Post(), nested.Put(), and nested.Delete() methods
 	nested.Post("/register", auth.Register)
 	nested.Post("/login", auth.Login)
+	nested.Put("/confirm/:token", auth.ConfirmEmail)
 }

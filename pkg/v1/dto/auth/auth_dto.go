@@ -15,3 +15,14 @@ type LoginResponse struct {
 	Message string      `json:"message"`
 	User    models.User `json:"user"`
 }
+
+type Response struct {
+	Success bool   `json:"success"`
+	Message string `json:"message"`
+}
+
+type RegisterResponse struct {
+	Success bool        `json:"success"`
+	Message string      `json:"message"`
+	User    models.User `json:"user"`
+}

@@ -33,6 +33,7 @@ type User struct {
 	Country            *string            `json:"country" validate:"required"`
 	Phone              *string            `json:"phone" validate:"required"`
 	Role               UserRole           `json:"role" validate:"oneof= admin user store","required"`
+	Confirmed          bool               `json:"confirmed"`
 	Confirmation_token *string            `json:"confirmation_token"`
 	Created_at         time.Time          `json:"created_at"`
 	Updated_at         time.Time          `json:"updated_at"`
@@ -68,6 +69,24 @@ func (u *User) FindById(id primitive.ObjectID) (User, error) {
 		return value, err
 	}
 	return value, err
+}
+
+func (u *User) UpdateStatus(id primitive.ObjectID) (bool, error) {
+	var user User
+	value, err := user.FindById(id)
+	if value.Confirmation_token == nil || *value.Confirmation_token == "" {
+		return false, err
+	}
+	if err != nil {
+		return false, err
+	}
+	filter := bson.D{{Key: "_id", Value: id}}
+	update := bson.D{{Key: "$set", Value: bson.D{{Key: "confirmed", Value: true}, {Key: "confirmation_token", Value: nil}}}}
+	_, err = UserCollection.UpdateOne(context.TODO(), filter, update)
+	if err != nil {
+		return false, err
+	}
+	return true, err
 }
 
 func (u *User) FindAll(page int64, limit int64) ([]*User, error) {

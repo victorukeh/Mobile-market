@@ -1,9 +1,12 @@
 package helper
 
 import (
+	"encoding/base64"
+	"encoding/json"
 	"fmt"
 	"log"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
@@ -107,4 +110,22 @@ func SetSignedCookieOrToken(user models.User) (fiber.Cookie, string) {
 		HTTPOnly: true,
 	}
 	return cookie, token
+}
+
+func Decode(token string) SignedDetails {
+	jwtParts := strings.Split(token, ".")
+	payload := jwtParts[1]
+	// Decode base64 payload into byte array
+	payloadBytes, err := base64.RawURLEncoding.DecodeString(payload)
+	if err != nil {
+		panic(err)
+	}
+
+	// Unmarshal JSON payload into struct
+	var claims SignedDetails
+	err = json.Unmarshal(payloadBytes, &claims)
+	if err != nil {
+		panic(err)
+	}
+	return claims
 }
