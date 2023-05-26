@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/go-playground/validator/v10"
@@ -11,7 +10,6 @@ import (
 	"github.com/victorukeh/mobile-market/pkg/v1/dto/handler"
 	helper "github.com/victorukeh/mobile-market/pkg/v1/helpers"
 	"github.com/victorukeh/mobile-market/pkg/v1/models"
-	"github.com/victorukeh/mobile-market/pkg/v1/utils"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
@@ -50,20 +48,19 @@ func (uc *AuthController) Register(c *fiber.Ctx) error {
 	token, _, _ := helper.GenerateAllTokens(*user.Email, *user.First_name, *user.Last_name, user.Role, user.ID)
 	user.Confirmation_token = &token
 	user.Confirmed = false
-	emailData := utils.VerificationEmailData{
-		Url:     "http://localhost:2000" + "/verifyemail/" + token,
-		Name:    *user.First_name,
-		Subject: "Your account verification code",
-	}
+	// emailData := utils.VerificationEmailData{
+	// 	Url:     "http://localhost:2000" + "/verifyemail/" + token,
+	// 	Name:    *user.First_name,
+	// 	Subject: "Your account verification code",
+	// }
 
 	// Only for production and staging
 
-	err = utils.SendVerificationEmail(*user.Email, &emailData)
-	if err != nil {
-		response := &auth.Response{Success: false, Message: err.Error()}
-		return c.Status(fiber.StatusInternalServerError).JSON(response)
-	}
-	fmt.Println("Token: ", token)
+	// err = utils.SendVerificationEmail(*user.Email, &emailData)
+	// if err != nil {
+	// 	response := &auth.Response{Success: false, Message: err.Error()}
+	// 	return c.Status(fiber.StatusInternalServerError).JSON(response)
+	// }
 
 	result, err := user.Create(user)
 	if err != nil {
