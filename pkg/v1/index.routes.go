@@ -2,6 +2,7 @@ package routes
 
 import (
 	"github.com/gofiber/fiber/v2"
+	"github.com/victorukeh/mobile-market/pkg/v1/middleware"
 	"github.com/victorukeh/mobile-market/pkg/v1/routes"
 )
 
@@ -15,7 +16,8 @@ func SetupRoutes(app *fiber.App) {
 	// Set up nested routes defined in users_routes.go
 	routes.AuthRoutes(nested)
 
-	// app.Use(middleware.Authentication)
+	app.Use(middleware.Authentication)
 
 	routes.UserRoutes(nested)
+	routes.FinanceRoutes(nested)
 }

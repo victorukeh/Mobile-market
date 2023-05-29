@@ -129,7 +129,6 @@ func (u *User) FindOne(user User) *mongo.SingleResult {
 func (u *User) FindByEmail(email string, user User) (User, error) {
 	var ctx, cancel = context.WithTimeout(context.Background(), 20*time.Second)
 	err := UserCollection.FindOne(ctx, bson.M{"email": email}).Decode(&user)
-	fmt.Println("Check5")
 	if err != nil {
 		fmt.Println(err)
 	}

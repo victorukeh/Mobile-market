@@ -1,6 +1,8 @@
 package middleware
 
 import (
+	"fmt"
+
 	"github.com/gofiber/fiber/v2"
 	"github.com/victorukeh/mobile-market/pkg/v1/dto/auth"
 	helper "github.com/victorukeh/mobile-market/pkg/v1/helpers"
@@ -18,11 +20,16 @@ func Authentication(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusUnauthorized).JSON(response)
 	}
 
-	c.Set("email", claims.Email)
-	c.Set("first_name", claims.First_name)
-	c.Set("last_name", claims.Last_name)
-	c.Set("id", claims.Id.Hex())
-	c.Set("role", string(claims.Role))
+	fmt.Println("Claims: ", claims)
+
+	// sub, ok := claims["sub"].(string)
+	// fmt.Println("Claims: ", claims["role"].(String))
+	// c.Set("email", claims.Email)
+	// c.Set("first_name", claims.First_name)
+	// c.Set("last_name", claims.Last_name)
+	// c.Set("id", claims.Id.Hex())
+	// c.Set("role", string(claims.Role))
+	// c.Locals("userID", id)
 
 	return c.Next()
 	// return err
