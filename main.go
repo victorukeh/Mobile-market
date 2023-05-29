@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/gofiber/fiber/v2"
@@ -10,20 +9,18 @@ import (
 
 	// "github.com/gofiber/websocket/v2"
 	routes "github.com/victorukeh/mobile-market/pkg/v1"
-
-	socketio "github.com/googollee/go-socket.io"
 )
 
 func main() {
 	// port := os.Getenv("PORT")
 	// Create a new instance of Fiber
-	server := socketio.NewServer(nil)
+	// server := socketio.NewServer(nil)
 
-	server.OnConnect("/", func(s socketio.Conn) error {
-		s.SetContext("")
-		fmt.Println("connected:", s.ID())
-		return nil
-	})
+	// server.OnConnect("/", func(s socketio.Conn) error {
+	// 	s.SetContext("")
+	// 	fmt.Println("connected:", s.ID())
+	// 	return nil
+	// })
 
 	app := fiber.New()
 	app.Use(logger.New())
@@ -68,13 +65,13 @@ func main() {
 	// 	log.Fatal(err)
 	// }
 
-	server.OnDisconnect("/", func(s socketio.Conn, reason string) {
-		fmt.Println("server closed", reason)
-	})
+	// server.OnDisconnect("/", func(s socketio.Conn, reason string) {
+	// 	fmt.Println("server closed", reason)
+	// })
 
-	http.Handle("/socket.io/", server)
-	go server.Serve()
-	defer server.Close()
+	// http.Handle("/socket.io/", server)
+	// go server.Serve()
+	// defer server.Close()
 
 	fs := http.FileServer(http.Dir("static"))
 	http.Handle("/", fs)
