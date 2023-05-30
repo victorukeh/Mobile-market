@@ -15,8 +15,8 @@ import (
 
 type Wallet struct {
 	ID      primitive.ObjectID `bson:"_id"`
-	UserID  primitive.ObjectID `json:"user_id" validate:"required"`
-	Balance int                `json:"balance" validate:"required"`
+	UserID  primitive.ObjectID `bson:"user_id" validate:"required" unique:"true"`
+	Balance int                `json:"balance" validate:"required`
 }
 
 var WalletCollection *mongo.Collection = database.OpenCollection(database.Client, "wallet")
@@ -96,6 +96,14 @@ func (u *Wallet) CountWallets(field string, value string) (int64, error) {
 	return count, err
 }
 
+func (u *Wallet) FindByUserID(id primitive.ObjectID) (Wallet, error) {
+	var wallet Wallet
+	var ctx, cancel = context.WithTimeout(context.Background(), 100*time.Second)
+	err := WalletCollection.FindOne(ctx, bson.M{"userid": id}).Decode(&wallet)
+	defer cancel()
+	return wallet, err
+}
+
 func sliceWalletsToInterface(slice interface{}) []interface{} {
 	s := reflect.ValueOf(slice)
 	if s.Kind() != reflect.Slice {
@@ -114,4 +122,15 @@ func GetWalletById(id primitive.ObjectID) (Wallet, error) {
 	err := WalletCollection.FindOne(ctx, bson.M{"_id": id}).Decode(&wallet)
 	defer cancel()
 	return wallet, err
+}
+
+func (u *Wallet) Count(filter options.ArrayFilters) (int64, error) {
+	ctx := context.Background()
+
+	count, err := WalletCollection.CountDocuments(ctx, filter)
+	if err != nil {
+		return 0, err
+	}
+
+	return count, nil
 }

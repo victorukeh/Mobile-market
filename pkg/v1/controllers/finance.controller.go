@@ -14,20 +14,18 @@ type FinanceController struct{}
 
 func (uc *FinanceController) CreateWallet(c *fiber.Ctx) error {
 	var wallet models.Wallet
-	userID, _ := c.Locals("id").(primitive.ObjectID)
-	check, _ := c.Locals("id").(string)
-	if len(userID) < 24 {
-		fmt.Println("UserId: ", userID)
-		fmt.Println("UserId: ", check)
-		response := &handler.ErrorResponse{Success: true, Error: "Unauthorized"}
-		return c.Status(fiber.StatusUnauthorized).JSON(response)
-	}
+	userID, _ := c.Locals("userID").(primitive.ObjectID)
 	fmt.Println("UserId: ", userID)
-	createWallet := models.Wallet{
-		UserID:  userID,
-		Balance: 0,
+	wallet.UserID = userID
+	wallet.Balance = 0
+	wallet.ID = primitive.NewObjectID()
+	findWallet, err := wallet.FindByUserID(userID)
+	if err == nil {
+		response := &handler.ErrorResponse{Success: false, Error: "Wallet already exists"}
+		return c.Status(fiber.StatusCreated).JSON(response)
 	}
-	result, err := wallet.Create(createWallet)
+	fmt.Println("Wallet: ", findWallet, "Err: ", err)
+	result, err := wallet.Create(wallet)
 	if err != nil {
 		response := &handler.ErrorResponse{Success: false, Error: err.Error()}
 		return c.Status(fiber.ErrBadRequest.Code).JSON(response)
@@ -35,3 +33,20 @@ func (uc *FinanceController) CreateWallet(c *fiber.Ctx) error {
 	response := &finance.CreateWalletResponse{Success: true, Message: "Wallet Created Successfully", Wallet: &result}
 	return c.Status(fiber.StatusCreated).JSON(response)
 }
+
+// arrayFilter := primitive.M{
+// 	"userid": userID,
+// }
+// arrayFilters := options.ArrayFilters{
+// 	Filters: []interface{}{arrayFilter},
+// }
+// count, err := wallet.Count(arrayFilters)
+// if err != nil {
+// 	response := &handler.ErrorResponse{Success: false, Error: err.Error()}
+// 	return c.Status(fiber.StatusCreated).JSON(response)
+// }
+// fmt.Println("Count: ", count)
+// if count > 0 {
+// 	response := &handler.ErrorResponse{Success: false, Error: "Wallet already exists"}
+// 	return c.Status(fiber.StatusCreated).JSON(response)
+// }

@@ -20,16 +20,16 @@ func Authentication(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusUnauthorized).JSON(response)
 	}
 
-	fmt.Println("Claims: ", claims)
+	fmt.Println(claims)
 
 	// sub, ok := claims["sub"].(string)
 	// fmt.Println("Claims: ", claims["role"].(String))
-	// c.Set("email", claims.Email)
-	// c.Set("first_name", claims.First_name)
-	// c.Set("last_name", claims.Last_name)
-	// c.Set("id", claims.Id.Hex())
-	// c.Set("role", string(claims.Role))
-	// c.Locals("userID", id)
+	c.Set("email", claims.Email)
+	c.Set("first_name", claims.First_name)
+	c.Set("last_name", claims.Last_name)
+	c.Set("userID", claims.Id.Hex())
+	c.Set("role", string(claims.Role))
+	c.Locals("userID", claims.Id)
 
 	return c.Next()
 	// return err

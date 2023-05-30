@@ -106,7 +106,7 @@ func (uc *AuthController) Login(c *fiber.Ctx) error {
 		return c.Status(fiber.ErrBadRequest.Code).JSON(response)
 	}
 
-	_, token := helper.SetSignedCookieOrToken(foundUser)
+	_, token := helper.SetSignedCookieOrToken(result)
 	if err != nil {
 		response := &auth.Response{Success: false, Message: err.Error()}
 		return c.Status(fiber.StatusInternalServerError).JSON(response)
