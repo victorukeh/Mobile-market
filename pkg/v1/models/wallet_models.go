@@ -2,6 +2,7 @@ package models
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"reflect"
 	"time"
@@ -31,6 +32,13 @@ func (u *Wallet) FindById(id primitive.ObjectID) (Wallet, error) {
 
 func (u *Wallet) FindAll(page int64, limit int64) ([]*Wallet, error) {
 	var results []*Wallet
+
+	if limit < 0 || page < 0 {
+		return results, errors.New("invalid page or limit")
+	}
+	if limit == 0 && page == 0 {
+		return results, nil
+	}
 	options := options.Find().SetSort(bson.D{}).SetLimit(limit).SetSkip(page * limit)
 	cursor, err := WalletCollection.Find(context.Background(), bson.D{}, options)
 	if err != nil {
@@ -49,7 +57,7 @@ func (u *Wallet) FindAll(page int64, limit int64) ([]*Wallet, error) {
 	if err := cursor.Err(); err != nil {
 		return results, err
 	}
-	return results, nil
+	return results, err
 }
 
 func (u *Wallet) FindByIdAndDelete(id primitive.ObjectID) (*mongo.DeleteResult, Wallet, error) {
