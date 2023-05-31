@@ -16,7 +16,7 @@ import (
 type Wallet struct {
 	ID      primitive.ObjectID `bson:"_id"`
 	UserID  primitive.ObjectID `bson:"user_id" validate:"required" unique:"true"`
-	Balance int                `json:"balance" validate:"required`
+	Balance int                `json:"balance"`
 }
 
 var WalletCollection *mongo.Collection = database.OpenCollection(database.Client, "wallet")
@@ -73,11 +73,14 @@ func (u *Wallet) FindByEmail(email string, wallet Wallet) (Wallet, error) {
 
 func (u *Wallet) Create(wallet Wallet) (Wallet, error) {
 	var ctx, cancel = context.WithTimeout(context.Background(), 100*time.Second)
-	value, InsertErr := WalletCollection.InsertOne(ctx, wallet)
-	err := WalletCollection.FindOne(ctx, bson.M{"_id": value}).Decode(&wallet)
-	if err != nil {
-		err = InsertErr
+	err := WalletCollection.FindOne(ctx, bson.M{"user_id": wallet.UserID}).Decode(&wallet)
+	fmt.Println("Error", err)
+	if err == nil {
+		defer cancel()
+		return wallet, err
 	}
+	_, err = WalletCollection.InsertOne(ctx, wallet)
+	fmt.Println("Error2", err)
 	defer cancel()
 	return wallet, err
 }
@@ -99,7 +102,8 @@ func (u *Wallet) CountWallets(field string, value string) (int64, error) {
 func (u *Wallet) FindByUserID(id primitive.ObjectID) (Wallet, error) {
 	var wallet Wallet
 	var ctx, cancel = context.WithTimeout(context.Background(), 100*time.Second)
-	err := WalletCollection.FindOne(ctx, bson.M{"userid": id}).Decode(&wallet)
+	err := WalletCollection.FindOne(ctx, bson.M{"user_id": id}).Decode(&wallet)
+	fmt.Println("Errpr", err, id)
 	defer cancel()
 	return wallet, err
 }

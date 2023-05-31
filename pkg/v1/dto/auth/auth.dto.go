@@ -22,7 +22,8 @@ type Response struct {
 }
 
 type RegisterResponse struct {
-	Success bool        `json:"success"`
-	Message string      `json:"message"`
-	User    models.User `json:"user"`
+	Success bool          `json:"success"`
+	Message string        `json:"message"`
+	User    models.User   `json:"user"`
+	Wallet  models.Wallet `json:"wallet"`
 }

@@ -19,6 +19,7 @@ var validate = validator.New()
 
 func (uc *AuthController) Register(c *fiber.Ctx) error {
 	var user models.User
+	var wallet models.Wallet
 	err := c.BodyParser(&user)
 	if err != nil {
 		response := &handler.ErrorResponse{Success: false, Error: err.Error()}
@@ -67,8 +68,15 @@ func (uc *AuthController) Register(c *fiber.Ctx) error {
 		response := &auth.Response{Success: false, Message: "User item was not created"}
 		return c.Status(fiber.StatusCreated).JSON(response)
 	}
-
-	response := &auth.RegisterResponse{Success: true, Message: "User Created Successfully", User: result}
+	wallet.UserID = user.ID
+	wallet.Balance = 0
+	wallet.ID = primitive.NewObjectID()
+	getWallet, err := wallet.Create(wallet)
+	if err != nil {
+		response := &handler.ErrorResponse{Success: false, Error: "Wallet already exists"}
+		return c.Status(fiber.StatusCreated).JSON(response)
+	}
+	response := &auth.RegisterResponse{Success: true, Message: "User Created Successfully", User: result, Wallet: getWallet}
 	return c.Status(fiber.StatusCreated).JSON(response)
 }
 
