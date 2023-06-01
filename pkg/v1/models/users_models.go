@@ -32,7 +32,7 @@ type User struct {
 	Email              *string            `json:"email" validate:"email,required"`
 	Country            *string            `json:"country" validate:"required"`
 	Phone              *string            `json:"phone" validate:"required"`
-	Role               UserRole           `json:"role" validate:"oneof= admin user store","required"`
+	Role               UserRole           `json:"role" validate:"oneof=admin user store,required"`
 	Confirmed          bool               `json:"confirmed"`
 	Confirmation_token *string            `json:"confirmation_token"`
 	Created_at         time.Time          `json:"created_at"`
