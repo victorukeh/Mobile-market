@@ -25,6 +25,24 @@ func (u *FinanceController) GetWallet(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusOK).JSON(response)
 }
 
+func (u *FinanceController) SetStatus(c *fiber.Ctx) error {
+	var cash models.Cash
+	var cashForm models.CashForm
+	err := c.BodyParser(&cashForm)
+	if err != nil {
+		response := &handler.ErrorResponse{Success: false, Error: err.Error()}
+		return c.Status(fiber.ErrBadRequest.Code).JSON(response)
+	}
+	validationErr := validate.Struct(cash)
+	if validationErr != nil {
+		// return fiber.NewError(fiber.ErrBadRequest.Code, validationErr.Error())
+		response := &handler.ErrorResponse{Success: false, Error: validationErr.Error()}
+		return c.Status(fiber.ErrBadRequest.Code).JSON(response)
+	}
+	response := &finance.SetStatusResponse{Success: true, Message: "Cash successfully validated"}
+	return c.Status(fiber.StatusOK).JSON(response)
+}
+
 // arrayFilter := primitive.M{
 // 	"userid": userID,
 // }

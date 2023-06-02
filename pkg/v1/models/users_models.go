@@ -17,11 +17,18 @@ import (
 )
 
 type UserRole string
+type Status string
 
 const (
 	Admin    UserRole = "admin"
 	Consumer UserRole = "user"
 	Store    UserRole = "store"
+)
+
+const (
+	Sourcing     Status = "sourcing"
+	Distributing Status = "distributing"
+	None         Status = "none"
 )
 
 type User struct {
@@ -33,6 +40,7 @@ type User struct {
 	Country            *string            `json:"country" validate:"required"`
 	Phone              *string            `json:"phone" validate:"required"`
 	Role               UserRole           `json:"role" validate:"oneof=admin user store,required"`
+	Status             Status             `json:"status" validate:"oneof=sourcing distributing none,required"`
 	Confirmed          bool               `json:"confirmed"`
 	Confirmation_token *string            `json:"confirmation_token"`
 	Created_at         time.Time          `json:"created_at"`

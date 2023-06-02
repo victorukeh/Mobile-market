@@ -28,7 +28,12 @@ type Cash struct {
 	Bill     *int64             `json:"bill" validate:"required"`
 	Amount   *string            `json:"amount" validate:"required"`
 	UserID   primitive.ObjectID `bson:"user_id" validate:"required"`
-	Type     *string            `json:"type" validate:"oneof=mint normal both,required"`
+	Type     Type               `json:"type" validate:"oneof=mint normal both,required"`
+}
+
+type CashForm struct {
+	Status Status  `json:"status" validate:"oneof=sourcing distributing none,required"`
+	Cash   []*Cash `json:"cash" validate:"required"`
 }
 
 var CashCollection *mongo.Collection = database.OpenCollection(database.Client, "cash")

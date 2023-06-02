@@ -49,6 +49,7 @@ func (uc *AuthController) Register(c *fiber.Ctx) error {
 	token, _, _ := helper.GenerateAllTokens(*user.Email, *user.First_name, *user.Last_name, user.Role, user.ID)
 	user.Confirmation_token = &token
 	user.Confirmed = false
+	user.Status = "none"
 	// emailData := utils.VerificationEmailData{
 	// 	Url:     "http://localhost:2000" + "/verifyemail/" + token,
 	// 	Name:    *user.First_name,

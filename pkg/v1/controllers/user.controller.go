@@ -44,7 +44,7 @@ func (uc *UserController) GetUsers(c *fiber.Ctx) error {
 	}
 	fmt.Println(getLimit, getPage)
 	page, err := strconv.Atoi(getPage)
-	if page < 1{
+	if page < 1 {
 		page = 1
 	}
 	if err != nil {
@@ -59,7 +59,7 @@ func (uc *UserController) GetUsers(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusOK).JSON(response)
 	}
 
-	result, err := user.FindAll(int64(page - 1), int64(limit))
+	result, err := user.FindAll(int64(page-1), int64(limit))
 	if err != nil {
 		response := &handler.ErrorResponse{Success: false, Error: err.Error()}
 		return c.Status(fiber.StatusOK).JSON(response)
@@ -67,3 +67,5 @@ func (uc *UserController) GetUsers(c *fiber.Ctx) error {
 	response := &users.GetUsers{Success: true, Message: "Users Fetched Successfully", Limit: limit, Page: page, User: result}
 	return c.Status(fiber.StatusOK).JSON(response)
 }
+
+// Set Availability
