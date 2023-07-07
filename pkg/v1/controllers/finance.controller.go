@@ -7,11 +7,32 @@ import (
 	"github.com/victorukeh/mobile-market/pkg/v1/dto/finance"
 	"github.com/victorukeh/mobile-market/pkg/v1/dto/handler"
 	"github.com/victorukeh/mobile-market/pkg/v1/models"
+	"github.com/victorukeh/mobile-market/pkg/v1/responses"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type FinanceController struct{}
 
+// Cash
+
+func (u *FinanceController) CreateCashType(c *fiber.Ctx) error {
+	var cashType models.CashType
+	err := c.BodyParser(&cashType)
+	if err != nil {
+		return responses.ErrorResponse(c, err)
+	}
+	validationErr := validate.Struct(cashType)
+	if validationErr != nil {
+		return responses.ErrorResponse(c, validationErr)
+	}
+	result, err := cashType.CreateCashType(cashType)
+	if err != nil {
+		return responses.ErrorResponse(c, err)
+	}
+	return responses.WalletCreateResponse(c, result)
+}
+
+// Wallets
 func (u *FinanceController) GetWallet(c *fiber.Ctx) error {
 	var wallet models.Wallet
 	userID, _ := c.Locals("userID").(primitive.ObjectID)
@@ -21,12 +42,11 @@ func (u *FinanceController) GetWallet(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusCreated).JSON(response)
 	}
 	fmt.Println("Wallet", findWallet)
-	response := &finance.CreateWalletResponse{Success: true, Message: "Wallet Found", Wallet: &findWallet}
-	return c.Status(fiber.StatusOK).JSON(response)
+	return responses.WalletSuccessResponse(c, findWallet)
 }
 
 func (u *FinanceController) SetStatus(c *fiber.Ctx) error {
-	var cash models.Cash
+	var cash models.CashType
 	var cashForm models.CashForm
 	err := c.BodyParser(&cashForm)
 	if err != nil {
@@ -39,7 +59,7 @@ func (u *FinanceController) SetStatus(c *fiber.Ctx) error {
 		response := &handler.ErrorResponse{Success: false, Error: validationErr.Error()}
 		return c.Status(fiber.ErrBadRequest.Code).JSON(response)
 	}
-	response := &finance.SetStatusResponse{Success: true, Message: "Cash successfully validated"}
+	response := &finance.SetStatusDto{Success: true, Message: "Cash successfully validated"}
 	return c.Status(fiber.StatusOK).JSON(response)
 }
 

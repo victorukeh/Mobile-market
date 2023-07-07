@@ -17,7 +17,7 @@ import (
 type Wallet struct {
 	ID      primitive.ObjectID `bson:"_id"`
 	UserID  primitive.ObjectID `bson:"user_id" validate:"required" unique:"true"`
-	Balance int                `json:"balance"`
+	Balance float64            `json:"balance"`
 }
 
 var WalletCollection *mongo.Collection = database.OpenCollection(database.Client, "wallet")
