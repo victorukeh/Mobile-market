@@ -1,48 +1,61 @@
 package controllers
 
 import (
-	"fmt"
-
 	"github.com/gofiber/fiber/v2"
 	"github.com/victorukeh/mobile-market/pkg/v1/dto/finance"
 	"github.com/victorukeh/mobile-market/pkg/v1/dto/handler"
 	"github.com/victorukeh/mobile-market/pkg/v1/models"
 	"github.com/victorukeh/mobile-market/pkg/v1/responses"
+	"github.com/victorukeh/mobile-market/pkg/v1/services"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type FinanceController struct{}
 
 // Cash
+type CashData struct {
+	CashGroup []models.CashGroup `json:"cashGroup"`
+}
 
 func (u *FinanceController) CreateCashType(c *fiber.Ctx) error {
+	userID := c.Locals("userID").(primitive.ObjectID)
 	var cashType models.CashType
 	err := c.BodyParser(&cashType)
+	cashType.ID = primitive.NewObjectID()
+	cashType.UserID = userID
 	if err != nil {
-		return responses.ErrorResponse(c, err)
+		return responses.ErrorResponse(c, err, 400)
 	}
 	validationErr := validate.Struct(cashType)
 	if validationErr != nil {
-		return responses.ErrorResponse(c, validationErr)
+		return responses.ErrorResponse(c, validationErr, 400)
 	}
-	result, err := cashType.CreateCashType(cashType)
-	if err != nil {
-		return responses.ErrorResponse(c, err)
-	}
-	return responses.WalletCreateResponse(c, result)
+	financeService := &services.FinanceService{}
+	return financeService.CreateCashType(c, cashType)
 }
+
+func (u *FinanceController) CreateCashGroup(c *fiber.Ctx) error {
+	var cashData models.CashData
+	err := c.BodyParser(&cashData)
+	if err != nil {
+		return responses.ErrorResponse(c, err, 400)
+	}
+
+	if err != nil {
+		return responses.ErrorResponse(c, err, 400)
+	}
+	financeService := &services.FinanceService{}
+	return financeService.CreateCashGroup(c, cashData)
+}
+
+// func (u *FinanceController) GetUserCashGroups(c *fiber.Ctx) error {
+
+// }
 
 // Wallets
 func (u *FinanceController) GetWallet(c *fiber.Ctx) error {
-	var wallet models.Wallet
-	userID, _ := c.Locals("userID").(primitive.ObjectID)
-	findWallet, err := wallet.FindByUserID(userID)
-	if err != nil {
-		response := &handler.ErrorResponse{Success: false, Error: "Wallet does not exist"}
-		return c.Status(fiber.StatusCreated).JSON(response)
-	}
-	fmt.Println("Wallet", findWallet)
-	return responses.WalletSuccessResponse(c, findWallet)
+	financeService := &services.FinanceService{}
+	return financeService.GetWallet(c)
 }
 
 func (u *FinanceController) SetStatus(c *fiber.Ctx) error {

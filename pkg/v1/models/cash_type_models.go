@@ -2,6 +2,7 @@ package models
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/victorukeh/mobile-market/pkg/v1/database"
@@ -22,11 +23,10 @@ const (
 )
 
 type CashType struct {
-	ID       primitive.ObjectID `bson:"id"`
+	ID       primitive.ObjectID `bson:"_id"`
 	Currency *string            `json:"currency" validate:"oneof=naira dollar euro cedis,required"`
-	Bill     *int64             `json:"bill" validate:"required"`
-	Amount   *string            `json:"amount" validate:"required"`
-	UserID   primitive.ObjectID `bson:"user_id" validate:"required"`
+	Bill     *int64             `json:"bill" validate:"required" unique:"true"`
+	UserID   primitive.ObjectID `bson:"user" validate:"required"`
 }
 
 type CashForm struct {
@@ -34,7 +34,7 @@ type CashForm struct {
 	CashType []*CashType `json:"cash" validate:"required"`
 }
 
-var CashTypeCollection *mongo.Collection = database.OpenCollection(database.Client, "cash")
+var CashTypeCollection *mongo.Collection = database.OpenCollection(database.Client, "cash-type")
 
 func (u *CashType) GetCashTypes(currency string) ([]*CashType, error) {
 	var ctx, cancel = context.WithTimeout(context.Background(), 100*time.Second)
@@ -74,4 +74,23 @@ func (u *CashType) CreateCashType(cashType CashType) (CashType, error) {
 	}
 	defer cancel()
 	return cashType, err
+}
+
+func (u *CashType) FindOneCashType(cashType CashType) error {
+	var ctx, cancel = context.WithTimeout(context.Background(), 100*time.Second)
+	filter := bson.D{{Key: "bill", Value: cashType.Bill}, {Key: "currency", Value: cashType.Currency}}
+	fmt.Println(*cashType.Bill, *cashType.Currency)
+	err := CashTypeCollection.FindOne(ctx, filter).Decode(&cashType)
+	defer cancel()
+	return err
+}
+
+func (u *CashType) FindCashTypeById(id primitive.ObjectID) error {
+	fmt.Println("ID: ", id)
+	var ctx, cancel = context.WithTimeout(context.Background(), 100*time.Second)
+	var cashType CashType
+	err := CashTypeCollection.FindOne(ctx, bson.M{"_id": id}).Decode(&cashType)
+
+	defer cancel()
+	return err
 }
